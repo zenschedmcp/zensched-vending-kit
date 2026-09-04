@@ -15,6 +15,7 @@ If you *are* a developer, skip to [For developers](#for-developers).
 - **Not a DEX / MDB / telemetry pull.** `coin_log` is *your* copy of what the tech typed on the phone (date, machine, coin, items, temp, sold-out). It is not a machine audit file, not a cash-drawer reconciliation, and not a substitute for whatever your warehouse or accounting system already does. This kit does not talk to the vend mechanism.
 - **Not a warehouse or planogram system.** "Items restocked" is a textarea. There is no SKU catalog, no pick list, and no spiral map.
 - **Not proof the spirals were filled correctly.** GPS says the tech was within the check-in radius of the site pin. The photos say they pointed a camera at the box. The kit cannot tell you a facing count is made up.
+- **Not your health-department / HACCP temperature log.** "Temperature OK" is what the tech saw on the gauge, so you can catch a warm cooler. It is not the official log the FDA Food Code (§4-204.111/112), EC 852/2004 HACCP, or Japan's Food Sanitation Act requires for refrigerated and food machines — those have their own required fields, retention periods, and inspector access. Keep the official book where it is; do not tell an inspector "it's in ZenSched."
 - **Not a signed legal document.** The Restock form has no signature field. On ZenSched a signature field replaces the Submit button, so adding one would make every stop look like the tech had signed something. Submitting the form is just submitting the form.
 
 If any of those is a deal-breaker, this kit is not for you. If you want route cadence, door-GPS, and a local extract you can file next to your real DEX or cash count, read on.
@@ -182,6 +183,7 @@ When you invite a technician, they get an email, install the app, and can immedi
 | ZenSched tools return an auth error | Key still says `zsc_your_key_here`, or was pasted with a space | Re-paste the key, restart |
 | `payment_required` | Metered call with no balance | Follow the instructions in the response; $5 deposit |
 | AI creates shifts at the wrong hour | Timezone not set | "Set my timezone offset to -04:00 in settings" (use your own offset) |
+| Shifts are exactly one hour off after the clocks change | `settings.timezone_offset` still holds the old daylight-saving offset (US Eastern: `-04:00` in summer, `-05:00` in winter) | "Update my timezone offset to -05:00" (or back to -04:00 in March). The AI does this itself when it notices, but check the first week after a clock change |
 | Shift creation fails for dates a couple of months out | The machine's 60-day ZenSched event has expired | Say "renew the events"; the AI runs the roll-over in `SKILL.md` and retries |
 | Tech's check-in not GPS-verified in a lobby / break room | Geocoded pin is on the street, tech is several floors up, or the radius is too tight | Ask the AI to widen `checkin_radius_m` with `policy_update` (not on the location) to 150–200 m, or run `location_update` / `location_refine` ($0.10). Do **not** ask for `remote_checkin` on policy 0 if you also have outdoor pads |
 | Two machines at the same building each got a geocode charge | Address written differently | Say "these are the same site" and the AI will point the second machine at the first pin (one wasted $0.03) |
@@ -223,7 +225,7 @@ If something is confusing or broken in ZenSched itself, ask the AI to call `feed
 
 ZenSched caches idempotent responses for 24 hours. A second machine at a reused site does **not** call `location_create`.
 
-**Timestamps.** `shift_create` takes `start` and `end` in ISO 8601 with an explicit offset. Always use the business's local offset from `settings.timezone_offset` (e.g. `2026-09-08T08:00:00-04:00`), never `Z`. The view builds these strings so the agent does not have to.
+**Timestamps.** `shift_create` takes `start` and `end` in ISO 8601 with an explicit offset. Always use the business's local offset from `settings.timezone_offset` (e.g. `2026-09-08T08:00:00-04:00`), never `Z`. The view builds these strings so the agent does not have to. The setting is a fixed string, not a zone name, so it must be updated at each daylight-saving transition (SKILL.md rule 8); `example-workflow.md` shows the November switch to `-05:00`.
 
 **Metered reads.** `form_submissions` and `form_export` bill $0.05 per submission read ($0.15 with media); `form_export` is preferred for a week at a time. The kit stores the summary and media URLs on `visits` on first read so later coin-log questions are answered from SQLite. `shift_list`, `shift_status`, `event_get`, and `timesheet_export(mode="hours"|"raw")` are free.
 

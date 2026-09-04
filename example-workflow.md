@@ -477,9 +477,14 @@ sqlite_execute: UPDATE invoices SET paid = 1, paid_date = date('now') WHERE invo
 
 ## Eight weeks later: "Schedule this week."
 
+US daylight saving time ended on Sunday 2026-11-01, so Tampa is now `-05:00`. The `machines_due` view stamps whatever `settings.timezone_offset` holds onto `start_iso` / `end_iso`, so the agent updates the setting first (SKILL.md rule 8); otherwise every November shift would land an hour late.
+
 ```
+sqlite_execute: UPDATE settings SET value = '-05:00' WHERE key = 'timezone_offset';
+
 sqlite_query: SELECT * FROM machines_due;
-  → 2026-11-10 | Harbor snack | weekly | evt 8001 | event_valid_until 2026-11-06 | event_needs_roll 1 | ...
+  → 2026-11-10 | Harbor snack | weekly | evt 8001 | event_valid_until 2026-11-06 | event_needs_roll 1
+               | start_iso 2026-11-10T08:00:00-05:00 | end_iso 2026-11-10T08:15:00-05:00 | ...
 
 event_create:
   location_id: 9201
@@ -492,13 +497,13 @@ event_create:
 form_assign: form_id 501, event_id 8101, idempotency_key "assign-restock-8101"
 sqlite_execute: UPDATE machines SET zensched_event_id = 8101, event_valid_until = '2027-01-08' WHERE machine_id = 1;
 
-shift_create: event_id 8101, worker_id 601, start "2026-11-10T08:00:00-04:00",
-              end "2026-11-10T08:15:00-04:00", idempotency_key "shift-machine-1-20261110"
+shift_create: event_id 8101, worker_id 601, start "2026-11-10T08:00:00-05:00",
+              end "2026-11-10T08:15:00-05:00", idempotency_key "shift-machine-1-20261110"
 ```
 
 (Same roll for Harbor drink if its window has also expired. Bayshore's biweekly date may or may not fall in this week.)
 
-> Scheduled Harbor snack for Tue Nov 10 8:00. Its ZenSched event was about to expire (Nov 6), so I renewed it through Jan 8. Same pin as Harbor drink.
+> Scheduled Harbor snack for Tue Nov 10 8:00. Its ZenSched event was about to expire (Nov 6), so I renewed it through Jan 8. Same pin as Harbor drink. Clocks changed on Nov 1, so I switched your schedule offset to -05:00 first.
 
 ## Summary of who stored what
 

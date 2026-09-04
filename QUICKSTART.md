@@ -4,7 +4,7 @@ Setup is about 15 minutes, once. After that everything is plain English to your 
 
 You need: Claude Desktop (or Cursor) and [Node.js LTS](https://nodejs.org/) installed. Nothing else.
 
-Before you start, read the "What this kit is not" section of `README.md`. Short version: this is GPS-verified route proof plus a local extract of the Restock form. It is **not** a DEX file, **not** machine telemetry, and **not** a warehouse inventory system.
+Before you start, read the "What this kit is not" section of `README.md`. Short version: this is GPS-verified route proof plus a local extract of the Restock form. It is **not** a DEX file, **not** machine telemetry, **not** a warehouse inventory system, and **not** your official health-department / HACCP temperature log (the form's "Temperature OK" is a field note, not the regulatory record).
 
 ## 1. Make a data folder
 
